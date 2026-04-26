@@ -91,15 +91,26 @@ create policy "profiles_update" on public.profiles for update to authenticated u
 
 -- Games: viewable by members, creatable by authenticated users
 create policy "games_select" on public.games for select to authenticated using (
-  exists (select 1 from public.game_members where game_id = id and user_id = auth.uid())
-  or created_by = auth.uid()
+  is_game_member(id) or created_by = auth.uid()
 );
 create policy "games_insert" on public.games for insert to authenticated with check (created_by = auth.uid());
 create policy "games_update" on public.games for update to authenticated using (created_by = auth.uid());
 
+-- Helper to avoid RLS recursion on game_members
+create or replace function public.is_game_member(gid uuid)
+returns boolean
+language sql
+security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.game_members
+    where game_id = gid and user_id = auth.uid()
+  );
+$$;
+
 -- Game members: viewable by game members, insertable by game creator or self (join)
 create policy "game_members_select" on public.game_members for select to authenticated using (
-  exists (select 1 from public.game_members gm where gm.game_id = game_id and gm.user_id = auth.uid())
+  is_game_member(game_id)
 );
 create policy "game_members_insert" on public.game_members for insert to authenticated with check (
   exists (select 1 from public.games where id = game_id and created_by = auth.uid())
