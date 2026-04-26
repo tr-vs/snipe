@@ -13,6 +13,7 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
+import { accent } from '@/lib/theme'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
   },
   submitBtn: {
     flex: 2,
-    backgroundColor: '#fff',
+    backgroundColor: accent,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   submitBtnText: {
-    color: '#000',
+    color: '#fff',
     fontWeight: '700',
     fontSize: 16,
   },

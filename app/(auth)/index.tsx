@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
+import { gradientColors, accent, cardBorder, mutedText } from '@/lib/theme'
 
 export default function EmailScreen() {
   const [email, setEmail] = useState('')
@@ -36,7 +37,7 @@ export default function EmailScreen() {
   }
 
   return (
-    <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={styles.container}>
+    <LinearGradient colors={gradientColors} style={styles.container}>
       <KeyboardAvoidingView
         style={styles.inner}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    color: 'rgba(255,255,255,0.4)',
+    color: mutedText,
     fontSize: 16,
     marginBottom: 32,
   },
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: cardBorder,
     gap: 12,
   },
   input: {
@@ -106,10 +107,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: cardBorder,
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: accent,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   buttonText: {
-    color: '#000',
+    color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },

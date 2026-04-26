@@ -12,6 +12,7 @@ import { BlurView } from 'expo-blur'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import type { Game } from '@/lib/types'
+import { gradientColors, accent, cardBorder, mutedText } from '@/lib/theme'
 
 type GameWithScore = Game & { my_score: number; member_count: number }
 
@@ -70,7 +71,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={styles.container}>
+    <LinearGradient colors={gradientColors} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>snipe.</Text>
         <TouchableOpacity onPress={signOut}>
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: cardBorder,
   },
   cardLeft: {
     flex: 1,
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   gameMeta: {
-    color: 'rgba(255,255,255,0.35)',
+    color: mutedText,
     fontSize: 13,
     marginTop: 4,
   },
@@ -172,12 +173,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   score: {
-    color: '#fff',
+    color: accent,
     fontSize: 28,
     fontWeight: '900',
   },
   scoreLabel: {
-    color: 'rgba(255,255,255,0.35)',
+    color: mutedText,
     fontSize: 11,
   },
   empty: {
@@ -191,19 +192,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   emptySubtext: {
-    color: 'rgba(255,255,255,0.35)',
+    color: mutedText,
     fontSize: 14,
     marginTop: 8,
   },
   fab: {
     margin: 24,
-    backgroundColor: '#fff',
+    backgroundColor: accent,
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
   },
   fabText: {
-    color: '#000',
+    color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },

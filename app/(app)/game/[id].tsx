@@ -15,6 +15,7 @@ import { BlurView } from 'expo-blur'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import type { GameMember, Game, Snipe } from '@/lib/types'
+import { gradientColors, accent, cardBorder, mutedText } from '@/lib/theme'
 
 type MemberWithName = GameMember & { display_name: string; email: string }
 type SnipeWithName = Snipe & { sniper_name: string; sniped_name: string | null }
@@ -91,7 +92,7 @@ export default function GameScreen() {
 
   if (loading) {
     return (
-      <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={styles.center}>
+      <LinearGradient colors={gradientColors} style={styles.center}>
         <ActivityIndicator color="#fff" />
       </LinearGradient>
     )
@@ -111,7 +112,7 @@ export default function GameScreen() {
   ]
 
   return (
-    <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={styles.container}>
+    <LinearGradient colors={gradientColors} style={styles.container}>
       <FlatList
         data={listData}
         keyExtractor={(item, i) => {
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   back: {
-    color: 'rgba(255,255,255,0.4)',
+    color: mutedText,
     fontSize: 16,
     marginBottom: 12,
   },
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
   },
   sectionLabel: {
-    color: 'rgba(255,255,255,0.4)',
+    color: mutedText,
     fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -234,13 +235,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: cardBorder,
   },
   firstPlace: {
-    borderColor: 'rgba(255,255,255,0.4)',
+    borderColor: accent,
   },
   rank: {
-    color: 'rgba(255,255,255,0.3)',
+    color: mutedText,
     fontSize: 14,
     width: 32,
   },
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   score: {
-    color: '#fff',
+    color: accent,
     fontSize: 22,
     fontWeight: '900',
   },
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: cardBorder,
   },
   snipePhoto: {
     width: '100%',
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   snipeTime: {
-    color: 'rgba(255,255,255,0.35)',
+    color: mutedText,
     fontSize: 13,
   },
   snipeBtn: {
@@ -292,13 +293,13 @@ const styles = StyleSheet.create({
     left: 24,
     right: 24,
     margin: 24,
-    backgroundColor: '#fff',
+    backgroundColor: accent,
     borderRadius: 16,
     paddingVertical: 20,
     alignItems: 'center',
   },
   snipeBtnText: {
-    color: '#000',
+    color: '#fff',
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: -0.5,

@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
+import { gradientColors, cardBorder, mutedText } from '@/lib/theme'
 
 export default function CreateGameScreen() {
   const [gameName, setGameName] = useState('')
@@ -85,7 +86,7 @@ export default function CreateGameScreen() {
   }
 
   return (
-    <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={{ flex: 1 }}>
+    <LinearGradient colors={gradientColors} style={{ flex: 1 }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   backText: {
-    color: 'rgba(255,255,255,0.4)',
+    color: mutedText,
     fontSize: 16,
   },
   title: {
@@ -172,11 +173,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: cardBorder,
     gap: 10,
   },
   label: {
-    color: 'rgba(255,255,255,0.4)',
+    color: mutedText,
     fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 15,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: cardBorder,
   },
   row: {
     flexDirection: 'row',
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: cardBorder,
   },
   addBtnText: {
     color: '#fff',
@@ -216,18 +217,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: cardBorder,
   },
   chipText: {
     color: '#fff',
     fontSize: 14,
   },
   removeText: {
-    color: 'rgba(255,255,255,0.4)',
+    color: mutedText,
     fontSize: 15,
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: accent,
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   buttonText: {
-    color: '#000',
+    color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },
