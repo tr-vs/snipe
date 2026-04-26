@@ -24,7 +24,10 @@ export default function HomeScreen() {
 
   async function fetchGames() {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      setLoading(false)
+      return
+    }
 
     const { data, error } = await supabase
       .from('game_members')
@@ -32,7 +35,10 @@ export default function HomeScreen() {
       .eq('user_id', user.id)
       .order('joined_at', { ascending: false })
 
-    if (error || !data) return
+    if (error || !data) {
+      setLoading(false)
+      return
+    }
 
     // Fetch member counts per game
     const gameIds = data.map((d: any) => d.game.id)

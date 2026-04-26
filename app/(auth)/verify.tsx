@@ -72,7 +72,7 @@ export default function VerifyScreen() {
         placeholder="6-digit code"
         placeholderTextColor="#555"
         keyboardType="number-pad"
-        maxLength={6}
+        maxLength={8}
         value={code}
         onChangeText={setCode}
       />
