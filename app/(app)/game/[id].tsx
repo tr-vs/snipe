@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Image,
   Dimensions,
+  Alert,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
@@ -29,7 +30,14 @@ export default function GameScreen() {
   const [snipes, setSnipes] = useState<SnipeWithName[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id)
+    })
+  }, [])
 
   const fetchGame = useCallback(async () => {
     const [{ data: gameData }, { data: membersData }, { data: snipesData, error: snipesError }] = await Promise.all([
@@ -70,6 +78,24 @@ export default function GameScreen() {
   }, [id])
 
   useFocusEffect(useCallback(() => { fetchGame() }, [fetchGame]))
+
+  async function deleteGame() {
+    Alert.alert('Delete game', 'This will delete the game and all snipes. Are you sure?', [
+      { text: 'cancel', style: 'cancel' },
+      {
+        text: 'delete',
+        style: 'destructive',
+        onPress: async () => {
+          const { error } = await supabase.from('games').delete().eq('id', id)
+          if (error) {
+            Alert.alert('Error', error.message)
+          } else {
+            router.replace('/(app)')
+          }
+        },
+      },
+    ])
+  }
 
   useEffect(() => {
 
@@ -132,9 +158,16 @@ export default function GameScreen() {
           if (item.type === 'header') {
             return (
               <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()}>
-                  <Text style={styles.back}>← back</Text>
-                </TouchableOpacity>
+                <View style={styles.headerRow}>
+                  <TouchableOpacity onPress={() => router.back()}>
+                    <Text style={styles.back}>← back</Text>
+                  </TouchableOpacity>
+                  {game?.created_by === currentUserId && (
+                    <TouchableOpacity onPress={deleteGame}>
+                      <Text style={styles.deleteText}>delete</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
                 <Text style={styles.gameName}>{game?.name}</Text>
               </View>
             )
@@ -204,10 +237,19 @@ const styles = StyleSheet.create({
     paddingTop: 64,
     paddingBottom: 16,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   back: {
     color: mutedText,
     fontSize: 16,
-    marginBottom: 12,
+  },
+  deleteText: {
+    color: '#ff4444',
+    fontSize: 14,
   },
   gameName: {
     color: '#fff',
