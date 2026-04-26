@@ -41,6 +41,11 @@ export default function CreateGameScreen() {
       return
     }
 
+    if (emails.length === 0) {
+      Alert.alert('Add a player', 'Add at least one friend to start a game.')
+      return
+    }
+
     setLoading(true)
 
     const { data: { user } } = await supabase.auth.getUser()
