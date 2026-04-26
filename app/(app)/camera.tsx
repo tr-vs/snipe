@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import * as FileSystem from 'expo-file-system'
+
 import { supabase } from '@/lib/supabase'
 
 export default function CameraScreen() {
@@ -30,24 +30,20 @@ export default function CameraScreen() {
     setUploading(true)
 
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 })
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.7, base64: true })
       if (!photo) throw new Error('No photo taken')
+      if (!photo.base64) throw new Error('No base64 data')
 
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      // Read photo as base64
-      const base64 = await FileSystem.readAsStringAsync(photo.uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      })
+      const base64 = photo.base64
 
       const fileName = `${gameId}/${user.id}/${Date.now()}.jpg`
-      const contentType = 'image/jpeg'
 
-      // Upload to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('snipes')
-        .upload(fileName, decode(base64), { contentType })
+        .upload(fileName, decode(base64), { contentType: 'image/jpeg' })
 
       if (uploadError) throw uploadError
 
@@ -55,7 +51,6 @@ export default function CameraScreen() {
         .from('snipes')
         .getPublicUrl(fileName)
 
-      // Insert snipe record
       const { error: insertError } = await supabase.from('snipes').insert({
         game_id: gameId,
         sniper_id: user.id,
@@ -76,11 +71,11 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.container}>
-      <CameraView ref={cameraRef} style={styles.camera} facing="back">
-        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-          <Text style={styles.closeText}>✕</Text>
-        </TouchableOpacity>
-      </CameraView>
+      <CameraView ref={cameraRef} style={styles.camera} facing="back" />
+
+      <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+        <Text style={styles.closeText}>✕</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={[styles.shutterBtn, uploading && styles.shutterDisabled]}
@@ -96,7 +91,6 @@ export default function CameraScreen() {
   )
 }
 
-// Decode base64 to Uint8Array for Supabase upload
 function decode(base64: string): Uint8Array {
   const binaryString = atob(base64)
   const bytes = new Uint8Array(binaryString.length)
