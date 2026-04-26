@@ -10,6 +10,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 
@@ -43,7 +45,6 @@ export default function CreateGameScreen() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Create game
     const { data: game, error: gameError } = await supabase
       .from('games')
       .insert({ name: gameName.trim(), created_by: user.id })
@@ -56,10 +57,8 @@ export default function CreateGameScreen() {
       return
     }
 
-    // Add creator as member
     await supabase.from('game_members').insert({ game_id: game.id, user_id: user.id })
 
-    // Look up friends by email and add them
     if (emails.length > 0) {
       const { data: profiles } = await supabase
         .from('profiles')
@@ -76,7 +75,7 @@ export default function CreateGameScreen() {
       if (foundCount < emails.length) {
         Alert.alert(
           'Some friends not found',
-          `${emails.length - foundCount} email(s) don't have an account yet. They can join once they sign up.`
+          `${emails.length - foundCount} email(s) don't have an account yet.`
         )
       }
     }
@@ -86,61 +85,65 @@ export default function CreateGameScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#000' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity onPress={() => router.back()} style={styles.back}>
-          <Text style={styles.backText}>← back</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.title}>new game</Text>
-
-        <Text style={styles.label}>game name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="backyard war 2025"
-          placeholderTextColor="#555"
-          value={gameName}
-          onChangeText={setGameName}
-        />
-
-        <Text style={styles.label}>add friends by email</Text>
-        <View style={styles.row}>
-          <TextInput
-            style={[styles.input, { flex: 1, marginBottom: 0 }]}
-            placeholder="friend@example.com"
-            placeholderTextColor="#555"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={emailInput}
-            onChangeText={setEmailInput}
-            onSubmitEditing={addEmail}
-          />
-          <TouchableOpacity style={styles.addBtn} onPress={addEmail}>
-            <Text style={styles.addBtnText}>add</Text>
+    <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <TouchableOpacity onPress={() => router.back()} style={styles.back}>
+            <Text style={styles.backText}>← back</Text>
           </TouchableOpacity>
-        </View>
 
-        {emails.map((e) => (
-          <View key={e} style={styles.phoneChip}>
-            <Text style={styles.phoneChipText}>{e}</Text>
-            <TouchableOpacity onPress={() => removeEmail(e)}>
-              <Text style={styles.removeText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+          <Text style={styles.title}>new game</Text>
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={createGame}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>{loading ? 'creating...' : 'create game'}</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <BlurView intensity={20} tint="dark" style={styles.card}>
+            <Text style={styles.label}>game name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="backyard war 2025"
+              placeholderTextColor="rgba(255,255,255,0.25)"
+              value={gameName}
+              onChangeText={setGameName}
+            />
+
+            <Text style={[styles.label, { marginTop: 8 }]}>add friends by email</Text>
+            <View style={styles.row}>
+              <TextInput
+                style={[styles.input, { flex: 1 }]}
+                placeholder="friend@example.com"
+                placeholderTextColor="rgba(255,255,255,0.25)"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={emailInput}
+                onChangeText={setEmailInput}
+                onSubmitEditing={addEmail}
+              />
+              <TouchableOpacity style={styles.addBtn} onPress={addEmail}>
+                <Text style={styles.addBtnText}>add</Text>
+              </TouchableOpacity>
+            </View>
+
+            {emails.map((e) => (
+              <View key={e} style={styles.chip}>
+                <Text style={styles.chipText}>{e}</Text>
+                <TouchableOpacity onPress={() => removeEmail(e)}>
+                  <Text style={styles.removeText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </BlurView>
+
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={createGame}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>{loading ? 'creating...' : 'create game'}</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   )
 }
 
@@ -154,7 +157,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   backText: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.4)',
     fontSize: 16,
   },
   title: {
@@ -162,70 +165,76 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '900',
     letterSpacing: -1,
-    marginBottom: 32,
+    marginBottom: 24,
+  },
+  card: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    gap: 10,
   },
   label: {
-    color: '#555',
-    fontSize: 12,
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 1,
-    marginBottom: 8,
   },
   input: {
-    backgroundColor: '#111',
+    backgroundColor: 'rgba(255,255,255,0.07)',
     color: '#fff',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 16,
-    marginBottom: 16,
+    fontSize: 15,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   row: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 12,
   },
   addBtn: {
-    backgroundColor: '#222',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 12,
     paddingHorizontal: 20,
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   addBtnText: {
     color: '#fff',
     fontWeight: '700',
   },
-  phoneChip: {
+  chip: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#111',
+    backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  phoneChipText: {
+  chipText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 14,
   },
   removeText: {
-    color: '#555',
-    fontSize: 16,
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 15,
   },
   button: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 20,
   },
   buttonDisabled: {
-    opacity: 0.4,
+    opacity: 0.3,
   },
   buttonText: {
     color: '#000',

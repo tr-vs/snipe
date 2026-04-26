@@ -9,6 +9,8 @@ import {
   Platform,
   Alert,
 } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { BlurView } from 'expo-blur'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 
@@ -47,85 +49,98 @@ export default function VerifyScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <TouchableOpacity onPress={() => router.back()} style={styles.back}>
-        <Text style={styles.backText}>← back</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.title}>verify</Text>
-      <Text style={styles.subtitle}>code sent to {email}</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="your name (required)"
-        placeholderTextColor="#555"
-        value={displayName}
-        onChangeText={setDisplayName}
-        autoCapitalize="words"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="6-digit code"
-        placeholderTextColor="#555"
-        keyboardType="number-pad"
-        maxLength={8}
-        value={code}
-        onChangeText={setCode}
-      />
-
-      <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={verify}
-        disabled={loading || code.length < 6}
+    <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.inner}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <Text style={styles.buttonText}>{loading ? 'verifying...' : 'verify'}</Text>
-      </TouchableOpacity>
-    </KeyboardAvoidingView>
+        <TouchableOpacity onPress={() => router.back()} style={styles.back}>
+          <Text style={styles.backText}>← back</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.title}>verify</Text>
+        <Text style={styles.subtitle}>code sent to {email}</Text>
+
+        <BlurView intensity={20} tint="dark" style={styles.card}>
+          <TextInput
+            style={styles.input}
+            placeholder="your name (required)"
+            placeholderTextColor="rgba(255,255,255,0.25)"
+            value={displayName}
+            onChangeText={setDisplayName}
+            autoCapitalize="words"
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="6-digit code"
+            placeholderTextColor="rgba(255,255,255,0.25)"
+            keyboardType="number-pad"
+            maxLength={8}
+            value={code}
+            onChangeText={setCode}
+          />
+
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={verify}
+            disabled={loading || code.length < 6}
+          >
+            <Text style={styles.buttonText}>{loading ? 'verifying...' : 'verify'}</Text>
+          </TouchableOpacity>
+        </BlurView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+  },
+  inner: {
+    flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
   },
   back: {
     position: 'absolute',
     top: 60,
-    left: 32,
+    left: 0,
   },
   backText: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.4)',
     fontSize: 16,
   },
   title: {
     color: '#fff',
-    fontSize: 48,
+    fontSize: 56,
     fontWeight: '900',
-    letterSpacing: -2,
+    letterSpacing: -3,
     marginBottom: 8,
   },
   subtitle: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.4)',
     fontSize: 16,
-    marginBottom: 40,
+    marginBottom: 32,
+  },
+  card: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    gap: 12,
   },
   input: {
-    backgroundColor: '#111',
+    backgroundColor: 'rgba(255,255,255,0.07)',
     color: '#fff',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 18,
-    marginBottom: 16,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   button: {
     backgroundColor: '#fff',
@@ -134,7 +149,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonDisabled: {
-    opacity: 0.4,
+    opacity: 0.3,
   },
   buttonText: {
     color: '#000',

@@ -10,7 +10,9 @@ import {
   Image,
   Dimensions,
 } from 'react-native'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { LinearGradient } from 'expo-linear-gradient'
+import { BlurView } from 'expo-blur'
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import type { GameMember, Game, Snipe } from '@/lib/types'
 
@@ -66,8 +68,9 @@ export default function GameScreen() {
     setRefreshing(false)
   }, [id])
 
+  useFocusEffect(useCallback(() => { fetchGame() }, [fetchGame]))
+
   useEffect(() => {
-    fetchGame()
 
     const channel = supabase
       .channel(`game-${id}`)
@@ -88,9 +91,9 @@ export default function GameScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={styles.center}>
         <ActivityIndicator color="#fff" />
-      </View>
+      </LinearGradient>
     )
   }
 
@@ -108,7 +111,7 @@ export default function GameScreen() {
   ]
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={styles.container}>
       <FlatList
         data={listData}
         keyExtractor={(item, i) => {
@@ -138,11 +141,11 @@ export default function GameScreen() {
 
           if (item.type === 'member') {
             return (
-              <View style={[styles.row, item.index === 0 && styles.firstPlace]}>
+              <BlurView intensity={20} tint="dark" style={[styles.row, item.index === 0 && styles.firstPlace]}>
                 <Text style={styles.rank}>#{item.index + 1}</Text>
                 <Text style={styles.name} numberOfLines={1}>{item.data.display_name}</Text>
                 <Text style={styles.score}>{item.data.score}</Text>
-              </View>
+              </BlurView>
             )
           }
 
@@ -181,7 +184,7 @@ export default function GameScreen() {
       >
         <Text style={styles.snipeBtnText}>snipe</Text>
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   )
 }
 
@@ -201,7 +204,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   back: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.4)',
     fontSize: 16,
     marginBottom: 12,
   },
@@ -212,7 +215,7 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
   },
   sectionLabel: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.4)',
     fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -225,19 +228,19 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#111',
-    borderRadius: 12,
+    overflow: 'hidden',
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   firstPlace: {
-    borderColor: '#fff',
+    borderColor: 'rgba(255,255,255,0.4)',
   },
   rank: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.3)',
     fontSize: 14,
     width: 32,
   },
@@ -256,7 +259,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#111',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   snipePhoto: {
     width: '100%',
@@ -267,6 +271,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 12,
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   sniperName: {
     color: '#fff',
@@ -278,7 +283,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   snipeTime: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.35)',
     fontSize: 13,
   },
   snipeBtn: {

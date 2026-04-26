@@ -9,6 +9,8 @@ import {
   Platform,
   Alert,
 } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 
@@ -27,72 +29,84 @@ export default function EmailScreen() {
       return
     }
 
-    // If email confirmation is disabled, session is created immediately
     const { data: { session } } = await supabase.auth.getSession()
-    if (session) return // root layout will redirect to (app)
+    if (session) return
 
     router.push({ pathname: '/(auth)/verify', params: { email: email.trim() } })
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <Text style={styles.title}>snipe.</Text>
-      <Text style={styles.subtitle}>enter your email</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="you@example.com"
-        placeholderTextColor="#555"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-        autoFocus
-      />
-
-      <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={sendOtp}
-        disabled={loading || !email.includes('@')}
+    <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.inner}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <Text style={styles.buttonText}>{loading ? 'sending...' : 'send code'}</Text>
-      </TouchableOpacity>
-    </KeyboardAvoidingView>
+        <Text style={styles.title}>snipe.</Text>
+        <Text style={styles.subtitle}>enter your email to get started</Text>
+
+        <BlurView intensity={20} tint="dark" style={styles.card}>
+          <TextInput
+            style={styles.input}
+            placeholder="you@example.com"
+            placeholderTextColor="rgba(255,255,255,0.25)"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+            autoFocus
+          />
+
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={sendOtp}
+            disabled={loading || !email.includes('@')}
+          >
+            <Text style={styles.buttonText}>{loading ? 'sending...' : 'send code'}</Text>
+          </TouchableOpacity>
+        </BlurView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+  },
+  inner: {
+    flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
   },
   title: {
     color: '#fff',
-    fontSize: 48,
+    fontSize: 56,
     fontWeight: '900',
-    letterSpacing: -2,
+    letterSpacing: -3,
     marginBottom: 8,
   },
   subtitle: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.4)',
     fontSize: 16,
-    marginBottom: 40,
+    marginBottom: 32,
+  },
+  card: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    gap: 12,
   },
   input: {
-    backgroundColor: '#111',
+    backgroundColor: 'rgba(255,255,255,0.07)',
     color: '#fff',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 18,
-    marginBottom: 16,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   button: {
     backgroundColor: '#fff',
@@ -101,7 +115,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonDisabled: {
-    opacity: 0.4,
+    opacity: 0.3,
   },
   buttonText: {
     color: '#000',

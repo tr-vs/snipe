@@ -225,12 +225,14 @@ const styles = StyleSheet.create({
   },
   tagSheet: {
     width: '100%',
-    backgroundColor: '#000',
+    backgroundColor: 'rgba(10,10,10,0.85)',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     paddingBottom: 48,
     gap: 16,
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   tagTitle: {
     color: '#fff',
@@ -246,9 +248,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#111',
+    backgroundColor: 'rgba(255,255,255,0.07)',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   memberChipSelected: {
     backgroundColor: '#fff',
@@ -268,12 +270,12 @@ const styles = StyleSheet.create({
   },
   retakeBtn: {
     flex: 1,
-    backgroundColor: '#111',
+    backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   retakeBtnText: {
     color: '#fff',

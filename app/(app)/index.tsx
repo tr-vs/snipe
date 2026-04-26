@@ -7,9 +7,11 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { BlurView } from 'expo-blur'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '@/lib/supabase'
-import type { Game, GameMember } from '@/lib/types'
+import type { Game } from '@/lib/types'
 
 type GameWithScore = Game & { my_score: number; member_count: number }
 
@@ -42,7 +44,6 @@ export default function HomeScreen() {
       return
     }
 
-    // Fetch member counts per game
     const gameIds = data.filter((d: any) => d.game).map((d: any) => d.game.id)
     const { data: counts } = await supabase
       .from('game_members')
@@ -69,7 +70,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#0a0a0a', '#0f0f1a', '#0a0a0a']} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>snipe.</Text>
         <TouchableOpacity onPress={signOut}>
@@ -91,17 +92,18 @@ export default function HomeScreen() {
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={styles.card}
               onPress={() => router.push({ pathname: '/(app)/game/[id]', params: { id: item.id } })}
             >
-              <View style={styles.cardLeft}>
-                <Text style={styles.gameName}>{item.name}</Text>
-                <Text style={styles.gameMeta}>{item.member_count} players</Text>
-              </View>
-              <View style={styles.cardRight}>
-                <Text style={styles.score}>{item.my_score}</Text>
-                <Text style={styles.scoreLabel}>snipes</Text>
-              </View>
+              <BlurView intensity={20} tint="dark" style={styles.card}>
+                <View style={styles.cardLeft}>
+                  <Text style={styles.gameName}>{item.name}</Text>
+                  <Text style={styles.gameMeta}>{item.member_count} players</Text>
+                </View>
+                <View style={styles.cardRight}>
+                  <Text style={styles.score}>{item.my_score}</Text>
+                  <Text style={styles.scoreLabel}>snipes</Text>
+                </View>
+              </BlurView>
             </TouchableOpacity>
           )}
         />
@@ -113,14 +115,13 @@ export default function HomeScreen() {
       >
         <Text style={styles.fabText}>+ new game</Text>
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
   },
   header: {
     flexDirection: 'row',
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     letterSpacing: -2,
   },
   signOut: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.3)',
     fontSize: 14,
   },
   list: {
@@ -145,14 +146,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    backgroundColor: '#111',
-    borderRadius: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
     padding: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   cardLeft: {
     flex: 1,
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   gameMeta: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.35)',
     fontSize: 13,
     marginTop: 4,
   },
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   scoreLabel: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.35)',
     fontSize: 11,
   },
   empty: {
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   emptySubtext: {
-    color: '#555',
+    color: 'rgba(255,255,255,0.35)',
     fontSize: 14,
     marginTop: 8,
   },
