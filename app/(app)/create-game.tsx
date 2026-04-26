@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
-import { gradientColors, cardBorder, mutedText } from '@/lib/theme'
+import { gradientColors, accent, cardBorder, mutedText } from '@/lib/theme'
 
 export default function CreateGameScreen() {
   const [gameName, setGameName] = useState('')
