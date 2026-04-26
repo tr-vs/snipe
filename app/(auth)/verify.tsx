@@ -13,7 +13,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 
 export default function VerifyScreen() {
-  const { phone } = useLocalSearchParams<{ phone: string }>()
+  const { email } = useLocalSearchParams<{ email: string }>()
   const [code, setCode] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,9 +27,9 @@ export default function VerifyScreen() {
 
     setLoading(true)
     const { data, error } = await supabase.auth.verifyOtp({
-      phone,
+      email,
       token: code,
-      type: 'sms',
+      type: 'email',
     })
     setLoading(false)
 
@@ -38,7 +38,6 @@ export default function VerifyScreen() {
       return
     }
 
-    // Update display name on profile
     if (data.user) {
       await supabase
         .from('profiles')
@@ -57,7 +56,7 @@ export default function VerifyScreen() {
       </TouchableOpacity>
 
       <Text style={styles.title}>verify</Text>
-      <Text style={styles.subtitle}>code sent to {phone}</Text>
+      <Text style={styles.subtitle}>code sent to {email}</Text>
 
       <TextInput
         style={styles.input}

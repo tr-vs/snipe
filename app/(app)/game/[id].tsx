@@ -12,7 +12,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import type { GameMember, Game } from '@/lib/types'
 
-type MemberWithName = GameMember & { display_name: string; phone: string }
+type MemberWithName = GameMember & { display_name: string; email: string }
 
 export default function GameScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -27,7 +27,7 @@ export default function GameScreen() {
       supabase.from('games').select('*').eq('id', id).single(),
       supabase
         .from('game_members')
-        .select('*, profile:profiles(display_name, phone)')
+        .select('*, profile:profiles(display_name, email)')
         .eq('game_id', id)
         .order('score', { ascending: false }),
     ])
@@ -37,8 +37,8 @@ export default function GameScreen() {
     if (membersData) {
       const enriched: MemberWithName[] = membersData.map((m: any) => ({
         ...m,
-        display_name: m.profile?.display_name ?? m.profile?.phone ?? 'unknown',
-        phone: m.profile?.phone ?? '',
+        display_name: m.profile?.display_name ?? m.profile?.email ?? 'unknown',
+        email: m.profile?.email ?? '',
       }))
       setMembers(enriched)
     }

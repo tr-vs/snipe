@@ -1,6 +1,6 @@
 export interface Profile {
   id: string
-  phone: string
+  email: string
   display_name: string
   created_at: string
 }

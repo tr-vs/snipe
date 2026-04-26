@@ -12,15 +12,14 @@ import {
 import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 
-export default function PhoneScreen() {
-  const [phone, setPhone] = useState('')
+export default function EmailScreen() {
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   async function sendOtp() {
-    const formatted = phone.startsWith('+') ? phone : `+1${phone.replace(/\D/g, '')}`
     setLoading(true)
-    const { error } = await supabase.auth.signInWithOtp({ phone: formatted })
+    const { error } = await supabase.auth.signInWithOtp({ email: email.trim() })
     setLoading(false)
 
     if (error) {
@@ -28,7 +27,7 @@ export default function PhoneScreen() {
       return
     }
 
-    router.push({ pathname: '/(auth)/verify', params: { phone: formatted } })
+    router.push({ pathname: '/(auth)/verify', params: { email: email.trim() } })
   }
 
   return (
@@ -37,22 +36,23 @@ export default function PhoneScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Text style={styles.title}>snipe.</Text>
-      <Text style={styles.subtitle}>enter your phone number</Text>
+      <Text style={styles.subtitle}>enter your email</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="+1 (555) 000-0000"
+        placeholder="you@example.com"
         placeholderTextColor="#555"
-        keyboardType="phone-pad"
-        value={phone}
-        onChangeText={setPhone}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
         autoFocus
       />
 
       <TouchableOpacity
         style={[styles.button, loading && styles.buttonDisabled]}
         onPress={sendOtp}
-        disabled={loading || phone.length < 10}
+        disabled={loading || !email.includes('@')}
       >
         <Text style={styles.buttonText}>{loading ? 'sending...' : 'send code'}</Text>
       </TouchableOpacity>

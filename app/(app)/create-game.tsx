@@ -15,24 +15,21 @@ import { supabase } from '@/lib/supabase'
 
 export default function CreateGameScreen() {
   const [gameName, setGameName] = useState('')
-  const [phoneInput, setPhoneInput] = useState('')
-  const [phones, setPhones] = useState<string[]>([])
+  const [emailInput, setEmailInput] = useState('')
+  const [emails, setEmails] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  function addPhone() {
-    const formatted = phoneInput.startsWith('+')
-      ? phoneInput.trim()
-      : `+1${phoneInput.replace(/\D/g, '')}`
-
-    if (formatted.length < 10) return
-    if (phones.includes(formatted)) return
-    setPhones([...phones, formatted])
-    setPhoneInput('')
+  function addEmail() {
+    const trimmed = emailInput.trim().toLowerCase()
+    if (!trimmed.includes('@')) return
+    if (emails.includes(trimmed)) return
+    setEmails([...emails, trimmed])
+    setEmailInput('')
   }
 
-  function removePhone(phone: string) {
-    setPhones(phones.filter((p) => p !== phone))
+  function removeEmail(email: string) {
+    setEmails(emails.filter((e) => e !== email))
   }
 
   async function createGame() {
@@ -62,12 +59,12 @@ export default function CreateGameScreen() {
     // Add creator as member
     await supabase.from('game_members').insert({ game_id: game.id, user_id: user.id })
 
-    // Look up friends by phone and add them
-    if (phones.length > 0) {
+    // Look up friends by email and add them
+    if (emails.length > 0) {
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id')
-        .in('phone', phones)
+        .in('email', emails)
 
       if (profiles && profiles.length > 0) {
         await supabase.from('game_members').insert(
@@ -76,10 +73,10 @@ export default function CreateGameScreen() {
       }
 
       const foundCount = profiles?.length ?? 0
-      if (foundCount < phones.length) {
+      if (foundCount < emails.length) {
         Alert.alert(
           'Some friends not found',
-          `${phones.length - foundCount} phone number(s) don't have an account yet. They can join once they sign up.`
+          `${emails.length - foundCount} email(s) don't have an account yet. They can join once they sign up.`
         )
       }
     }
@@ -109,26 +106,27 @@ export default function CreateGameScreen() {
           onChangeText={setGameName}
         />
 
-        <Text style={styles.label}>add friends by phone</Text>
+        <Text style={styles.label}>add friends by email</Text>
         <View style={styles.row}>
           <TextInput
             style={[styles.input, { flex: 1, marginBottom: 0 }]}
-            placeholder="+1 (555) 000-0000"
+            placeholder="friend@example.com"
             placeholderTextColor="#555"
-            keyboardType="phone-pad"
-            value={phoneInput}
-            onChangeText={setPhoneInput}
-            onSubmitEditing={addPhone}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={emailInput}
+            onChangeText={setEmailInput}
+            onSubmitEditing={addEmail}
           />
-          <TouchableOpacity style={styles.addBtn} onPress={addPhone}>
+          <TouchableOpacity style={styles.addBtn} onPress={addEmail}>
             <Text style={styles.addBtnText}>add</Text>
           </TouchableOpacity>
         </View>
 
-        {phones.map((p) => (
-          <View key={p} style={styles.phoneChip}>
-            <Text style={styles.phoneChipText}>{p}</Text>
-            <TouchableOpacity onPress={() => removePhone(p)}>
+        {emails.map((e) => (
+          <View key={e} style={styles.phoneChip}>
+            <Text style={styles.phoneChipText}>{e}</Text>
+            <TouchableOpacity onPress={() => removeEmail(e)}>
               <Text style={styles.removeText}>✕</Text>
             </TouchableOpacity>
           </View>

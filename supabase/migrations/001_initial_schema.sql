@@ -1,7 +1,7 @@
 -- Profiles (extends auth.users)
 create table if not exists public.profiles (
   id uuid references auth.users(id) on delete cascade primary key,
-  phone text unique not null,
+  email text unique not null,
   display_name text not null default '',
   created_at timestamptz default now() not null
 );
@@ -46,10 +46,10 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, phone, display_name)
+  insert into public.profiles (id, email, display_name)
   values (
     new.id,
-    coalesce(new.phone, ''),
+    coalesce(new.email, ''),
     coalesce(new.raw_user_meta_data->>'display_name', '')
   );
   return new;
