@@ -95,6 +95,7 @@ create policy "games_select" on public.games for select to authenticated using (
 );
 create policy "games_insert" on public.games for insert to authenticated with check (created_by = auth.uid());
 create policy "games_update" on public.games for update to authenticated using (created_by = auth.uid());
+create policy "games_delete" on public.games for delete to authenticated using (created_by = auth.uid());
 
 -- Helper to avoid RLS recursion on game_members
 create or replace function public.is_game_member(gid uuid)
