@@ -15,7 +15,7 @@ import { supabase } from '@/lib/supabase'
 import type { GameMember, Game, Snipe } from '@/lib/types'
 
 type MemberWithName = GameMember & { display_name: string; email: string }
-type SnipeWithName = Snipe & { sniper_name: string }
+type SnipeWithName = Snipe & { sniper_name: string; sniped_name: string | null }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
@@ -29,7 +29,7 @@ export default function GameScreen() {
   const router = useRouter()
 
   const fetchGame = useCallback(async () => {
-    const [{ data: gameData }, { data: membersData }, { data: snipesData }] = await Promise.all([
+    const [{ data: gameData }, { data: membersData }, { data: snipesData, error: snipesError }] = await Promise.all([
       supabase.from('games').select('*').eq('id', id).single(),
       supabase
         .from('game_members')
@@ -38,9 +38,10 @@ export default function GameScreen() {
         .order('score', { ascending: false }),
       supabase
         .from('snipes')
-        .select('*, sniper:profiles(display_name, email)')
+        .select('*, sniper:profiles!snipes_sniper_id_fkey(display_name, email), sniped:profiles!snipes_sniped_id_fkey(display_name)')
         .eq('game_id', id)
-        .order('created_at', { ascending: false }),
+        .order('created_at', { ascending: false })
+      ,
     ])
 
     if (gameData) setGame(gameData)
@@ -57,6 +58,7 @@ export default function GameScreen() {
       setSnipes(snipesData.map((s: any) => ({
         ...s,
         sniper_name: s.sniper?.display_name ?? s.sniper?.email ?? 'unknown',
+        sniped_name: s.sniped?.display_name ?? null,
       })))
     }
 
@@ -157,7 +159,10 @@ export default function GameScreen() {
                   resizeMode="cover"
                 />
                 <View style={styles.snipeMeta}>
-                  <Text style={styles.sniperName}>{item.data.sniper_name}</Text>
+                  <Text style={styles.sniperName}>
+                    {item.data.sniper_name}
+                    {item.data.sniped_name ? <Text style={styles.snipedName}> got {item.data.sniped_name}</Text> : null}
+                  </Text>
                   <Text style={styles.snipeTime}>
                     {new Date(item.data.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </Text>
@@ -267,6 +272,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 14,
+  },
+  snipedName: {
+    color: '#555',
+    fontWeight: '400',
   },
   snipeTime: {
     color: '#555',

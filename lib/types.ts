@@ -27,6 +27,7 @@ export interface Snipe {
   game_id: string
   sniper_id: string
   photo_url: string
+  sniped_id: string | null
   created_at: string
   sniper?: Profile
 }

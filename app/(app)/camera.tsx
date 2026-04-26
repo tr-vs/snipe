@@ -1,16 +1,55 @@
-import { useRef, useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native'
+import { useRef, useState, useEffect } from 'react'
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Dimensions,
+} from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-
 import { supabase } from '@/lib/supabase'
+
+const SCREEN_WIDTH = Dimensions.get('window').width
+
+type Member = { id: string; display_name: string }
 
 export default function CameraScreen() {
   const { gameId } = useLocalSearchParams<{ gameId: string }>()
   const [permission, requestPermission] = useCameraPermissions()
+  const [photoUri, setPhotoUri] = useState<string | null>(null)
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null)
+  const [members, setMembers] = useState<Member[]>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const cameraRef = useRef<CameraView>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    async function fetchMembers() {
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data } = await supabase
+        .from('game_members')
+        .select('user_id, profile:profiles(display_name)')
+        .eq('game_id', gameId)
+
+      if (data) {
+        setMembers(
+          data
+            .filter((m: any) => m.user_id !== user?.id)
+            .map((m: any) => ({
+              id: m.user_id,
+              display_name: m.profile?.display_name ?? 'unknown',
+            }))
+        )
+      }
+    }
+    fetchMembers()
+  }, [gameId])
 
   if (!permission) return <View style={styles.container} />
 
@@ -26,24 +65,26 @@ export default function CameraScreen() {
   }
 
   async function shoot() {
-    if (!cameraRef.current || uploading) return
+    if (!cameraRef.current) return
+    const photo = await cameraRef.current.takePictureAsync({ quality: 0.7, base64: true })
+    if (!photo || !photo.base64) return
+    setPhotoUri(photo.uri)
+    setPhotoBase64(photo.base64)
+  }
+
+  async function submitSnipe() {
+    if (!photoBase64 || !selectedId || uploading) return
     setUploading(true)
 
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.7, base64: true })
-      if (!photo) throw new Error('No photo taken')
-      if (!photo.base64) throw new Error('No base64 data')
-
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
-
-      const base64 = photo.base64
 
       const fileName = `${gameId}/${user.id}/${Date.now()}.jpg`
 
       const { error: uploadError } = await supabase.storage
         .from('snipes')
-        .upload(fileName, decode(base64), { contentType: 'image/jpeg' })
+        .upload(fileName, decode(photoBase64), { contentType: 'image/jpeg' })
 
       if (uploadError) throw uploadError
 
@@ -54,6 +95,7 @@ export default function CameraScreen() {
       const { error: insertError } = await supabase.from('snipes').insert({
         game_id: gameId,
         sniper_id: user.id,
+        sniped_id: selectedId,
         photo_url: publicUrl,
       })
 
@@ -69,6 +111,49 @@ export default function CameraScreen() {
     }
   }
 
+  // Preview + tag screen
+  if (photoUri) {
+    return (
+      <View style={styles.container}>
+        <Image source={{ uri: photoUri }} style={styles.preview} resizeMode="cover" />
+
+        <View style={styles.tagSheet}>
+          <Text style={styles.tagTitle}>who'd you get?</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.memberRow}>
+            {members.map((m) => (
+              <TouchableOpacity
+                key={m.id}
+                style={[styles.memberChip, selectedId === m.id && styles.memberChipSelected]}
+                onPress={() => setSelectedId(m.id)}
+              >
+                <Text style={[styles.memberChipText, selectedId === m.id && styles.memberChipTextSelected]}>
+                  {m.display_name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <View style={styles.tagActions}>
+            <TouchableOpacity style={styles.retakeBtn} onPress={() => { setPhotoUri(null); setPhotoBase64(null); setSelectedId(null) }}>
+              <Text style={styles.retakeBtnText}>retake</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.submitBtn, (!selectedId || uploading) && styles.submitBtnDisabled]}
+              onPress={submitSnipe}
+              disabled={!selectedId || uploading}
+            >
+              {uploading
+                ? <ActivityIndicator color="#000" />
+                : <Text style={styles.submitBtnText}>submit</Text>
+              }
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    )
+  }
+
+  // Camera screen
   return (
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing="back" />
@@ -77,15 +162,8 @@ export default function CameraScreen() {
         <Text style={styles.closeText}>✕</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.shutterBtn, uploading && styles.shutterDisabled]}
-        onPress={shoot}
-        disabled={uploading}
-      >
-        {uploading
-          ? <ActivityIndicator color="#000" />
-          : <View style={styles.shutterInner} />
-        }
+      <TouchableOpacity style={styles.shutterBtn} onPress={shoot}>
+        <View style={styles.shutterInner} />
       </TouchableOpacity>
     </View>
   )
@@ -108,6 +186,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   camera: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  preview: {
     ...StyleSheet.absoluteFillObject,
   },
   closeBtn: {
@@ -136,14 +217,83 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: 'rgba(255,255,255,0.3)',
   },
-  shutterDisabled: {
-    opacity: 0.5,
-  },
   shutterInner: {
     width: 64,
     height: 64,
     borderRadius: 32,
     backgroundColor: '#fff',
+  },
+  tagSheet: {
+    width: '100%',
+    backgroundColor: '#000',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 48,
+    gap: 16,
+  },
+  tagTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  memberRow: {
+    gap: 8,
+    paddingVertical: 4,
+  },
+  memberChip: {
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#111',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  memberChipSelected: {
+    backgroundColor: '#fff',
+    borderColor: '#fff',
+  },
+  memberChipText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  memberChipTextSelected: {
+    color: '#000',
+  },
+  tagActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  retakeBtn: {
+    flex: 1,
+    backgroundColor: '#111',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  retakeBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  submitBtn: {
+    flex: 2,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  submitBtnDisabled: {
+    opacity: 0.4,
+  },
+  submitBtnText: {
+    color: '#000',
+    fontWeight: '700',
+    fontSize: 16,
   },
   permText: {
     color: '#fff',
