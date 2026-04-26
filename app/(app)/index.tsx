@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import type { Game, GameMember } from '@/lib/types'
 
@@ -18,9 +18,11 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    fetchGames()
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      fetchGames()
+    }, [])
+  )
 
   async function fetchGames() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -41,7 +43,7 @@ export default function HomeScreen() {
     }
 
     // Fetch member counts per game
-    const gameIds = data.map((d: any) => d.game.id)
+    const gameIds = data.filter((d: any) => d.game).map((d: any) => d.game.id)
     const { data: counts } = await supabase
       .from('game_members')
       .select('game_id')
@@ -52,7 +54,7 @@ export default function HomeScreen() {
       countMap[c.game_id] = (countMap[c.game_id] || 0) + 1
     })
 
-    const enriched: GameWithScore[] = data.map((d: any) => ({
+    const enriched: GameWithScore[] = data.filter((d: any) => d.game).map((d: any) => ({
       ...d.game,
       my_score: d.score,
       member_count: countMap[d.game.id] || 1,

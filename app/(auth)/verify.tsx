@@ -21,7 +21,7 @@ export default function VerifyScreen() {
 
   async function verify() {
     if (!displayName.trim()) {
-      Alert.alert('Name required', 'Enter a display name so friends can find you.')
+      Alert.alert('Name required', 'You need a display name so your friends can see you on the leaderboard.')
       return
     }
 
@@ -60,7 +60,7 @@ export default function VerifyScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="your name"
+        placeholder="your name (required)"
         placeholderTextColor="#555"
         value={displayName}
         onChangeText={setDisplayName}

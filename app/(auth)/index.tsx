@@ -19,13 +19,17 @@ export default function EmailScreen() {
 
   async function sendOtp() {
     setLoading(true)
-    const { error } = await supabase.auth.signInWithOtp({ email: email.trim() })
+    const { data, error } = await supabase.auth.signInWithOtp({ email: email.trim() })
     setLoading(false)
 
     if (error) {
       Alert.alert('Error', error.message)
       return
     }
+
+    // If email confirmation is disabled, session is created immediately
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) return // root layout will redirect to (app)
 
     router.push({ pathname: '/(auth)/verify', params: { email: email.trim() } })
   }
