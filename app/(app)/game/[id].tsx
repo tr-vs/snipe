@@ -90,6 +90,7 @@ export default function GameScreen() {
           if (error) {
             Alert.alert('Error', error.message)
           } else {
+            router.dismissAll()
             router.replace('/(app)')
           }
         },
